@@ -10,7 +10,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @NullMarked
@@ -20,6 +19,7 @@ public final class EffectManager {
 
     public static final NamespacedKey DURATION_KEY = Doppelganger.key("duration");
     public static final NamespacedKey AMPLIFIER_KEY = Doppelganger.key("amplifier");
+    public static final NamespacedKey PARTICLES_KEY = Doppelganger.key("particles");
 
     private EffectManager() {}
 

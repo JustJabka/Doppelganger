@@ -1,6 +1,7 @@
 package justjabka.doppelganger.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -28,7 +29,9 @@ public class DEffect {
                                 .then(Commands.argument("effect", new EffectArgument())
                                         .then(Commands.argument("duration", IntegerArgumentType.integer(0, Integer.MAX_VALUE))
                                                 .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, 255))
-                                                        .executes(DEffect::applyEffect)
+                                                        .then(Commands.argument("hideParticles", BoolArgumentType.bool())
+                                                                .executes(DEffect::applyEffect)
+                                                        )
                                                 )
                                         )
                                 )
@@ -52,8 +55,9 @@ public class DEffect {
 
         final int duration = IntegerArgumentType.getInteger(ctx, "duration");
         final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
+        final boolean particles = !BoolArgumentType.getBool(ctx, "hideParticles");
 
-        effect.start(target, duration, amplifier);
+        effect.start(target, duration, amplifier, particles);
 
         ctx.getSource().getSender().sendMessage(
                 Component.translatable("commands.effect.give.success.single").arguments(
@@ -82,11 +86,6 @@ public class DEffect {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static @NonNull Player getPlayer(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        final PlayerSelectorArgumentResolver resolver = ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
-        return resolver.resolve(ctx.getSource()).getFirst();
-    }
-
     private static int clearEffects(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         final Player target = getPlayer(ctx);
 
@@ -99,5 +98,10 @@ public class DEffect {
         );
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static @NonNull Player getPlayer(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        final PlayerSelectorArgumentResolver resolver = ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
+        return resolver.resolve(ctx.getSource()).getFirst();
     }
 }

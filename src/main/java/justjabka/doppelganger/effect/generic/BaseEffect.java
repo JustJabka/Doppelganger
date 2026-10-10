@@ -16,6 +16,7 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
 
     public static final int DEFAULT_DURATION = 90 * 20;
     public static final int DEFAULT_AMPLIFIER = 0;
+    public static final boolean DEFAULT_PARTICLES = true;
 
     @Override
     public NamespacedKey getContainerKey() {
@@ -42,6 +43,14 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
     @NonNull
     public abstract Color getColor();
 
+    public boolean getParticles(Player player) {
+        return getEntryBoolean(player, EffectManager.PARTICLES_KEY);
+    }
+
+    public void setParticlesVisibility(Player player, boolean particles) {
+        setEntryBoolean(player, EffectManager.PARTICLES_KEY, particles);
+    }
+
     public boolean isEnded(Player player) {
         return getDuration(player) == 0;
     }
@@ -52,7 +61,7 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
     public abstract void onEnd(Player player);
 
     public void start(Player player) {
-        start(player, DEFAULT_DURATION, DEFAULT_AMPLIFIER);
+        start(player, DEFAULT_DURATION);
     }
 
     public void start(Player player, int duration) {
@@ -60,14 +69,19 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
     }
 
     public void start(Player player, int duration, int amplifier) {
+        start(player, duration, amplifier, DEFAULT_PARTICLES);
+    }
+
+    public void start(Player player, int duration, int amplifier, boolean particles) {
         setDuration(player, duration);
         setAmplifier(player, amplifier);
+        setParticlesVisibility(player, particles);
 
         onStart(player);
     }
 
     public void tick(Player player) {
-        if (isEnded(player)) {
+        if (isEnded(player) || !player.isValid()) {
             end(player);
             return;
         }
@@ -76,7 +90,9 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
 
         onTick(player);
 
-        showParticles(player);
+        if (getParticles(player)) {
+            showParticles(player);
+        }
     }
 
     public void end(Player player) {
