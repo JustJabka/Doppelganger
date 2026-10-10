@@ -42,4 +42,12 @@ public final class EffectManager {
 
         return activeEffects;
     }
+
+    public static void clearAllEffects(Player player) {
+        Set<BaseEffect> activeEffects = getActiveEffects(player);
+
+        for (BaseEffect effect : activeEffects) {
+            effect.end(player);
+        }
+    }
 }

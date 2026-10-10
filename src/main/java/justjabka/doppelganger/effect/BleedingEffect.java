@@ -34,7 +34,11 @@ public class BleedingEffect extends BaseEffect {
         if (getDuration(player) % 20 != 0) return;
         if (player.getHealth() <= 1) return;
 
-        player.damage(2, DamageSource.builder(DamageType.GENERIC).withCausingEntity(player).build());
+        player.damage(2, DamageSource.builder(DamageType.GENERIC)
+                .withDirectEntity(player)
+                .withCausingEntity(player)
+                .build()
+        );
     }
 
     @Override

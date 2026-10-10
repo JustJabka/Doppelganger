@@ -11,10 +11,11 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.command.argument.EffectArgument;
+import justjabka.doppelganger.effect.EffectManager;
 import justjabka.doppelganger.effect.generic.BaseEffect;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NonNull;
 
 public class DEffect {
     public static LiteralCommandNode<CommandSourceStack> build() {
@@ -22,12 +23,22 @@ public class DEffect {
                 .requires(ctx -> ctx.getSender().hasPermission(
                         "%s.command.deffect".formatted(Doppelganger.NAMESPACE))
                 )
-                .then(Commands.argument("target", ArgumentTypes.player())
-                        .then(Commands.argument("effect", new EffectArgument())
-                                .then(Commands.argument("duration", IntegerArgumentType.integer(0, Integer.MAX_VALUE))
-                                        .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, 255))
-                                                .executes(DEffect::applyEffect)
+                .then(Commands.literal("give")
+                        .then(Commands.argument("target", ArgumentTypes.player())
+                                .then(Commands.argument("effect", new EffectArgument())
+                                        .then(Commands.argument("duration", IntegerArgumentType.integer(0, Integer.MAX_VALUE))
+                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, 255))
+                                                        .executes(DEffect::applyEffect)
+                                                )
                                         )
+                                )
+                        )
+                )
+                .then(Commands.literal("clear")
+                        .then(Commands.argument("target", ArgumentTypes.player())
+                                .executes(DEffect::clearEffects)
+                                .then(Commands.argument("effect", new EffectArgument())
+                                        .executes(DEffect::clearEffect)
                                 )
                         )
                 )
@@ -35,8 +46,7 @@ public class DEffect {
     }
 
     private static int applyEffect(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        final PlayerSelectorArgumentResolver resolver = ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
-        final Player target = resolver.resolve(ctx.getSource()).getFirst();
+        final Player target = getPlayer(ctx);
 
         final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
@@ -45,9 +55,47 @@ public class DEffect {
 
         effect.start(target, duration, amplifier);
 
-        ctx.getSource().getSender().sendRichMessage("<target> got <effect>",
-                Placeholder.component("target", target.displayName()),
-                Placeholder.component("effect", Component.text(effect.getKey().asString()))
+        ctx.getSource().getSender().sendMessage(
+                Component.translatable("commands.effect.give.success.single").arguments(
+                        Component.translatable(effect.translationKey()),
+                        target.displayName()
+                )
+        );
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int clearEffect(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        final Player target = getPlayer(ctx);
+
+        final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+
+        effect.end(target);
+
+        ctx.getSource().getSender().sendMessage(
+                Component.translatable("commands.effect.clear.specific.success.single").arguments(
+                        Component.translatable(effect.translationKey()),
+                        target.displayName()
+                )
+        );
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static @NonNull Player getPlayer(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        final PlayerSelectorArgumentResolver resolver = ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
+        return resolver.resolve(ctx.getSource()).getFirst();
+    }
+
+    private static int clearEffects(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        final Player target = getPlayer(ctx);
+
+        EffectManager.clearAllEffects(target);
+
+        ctx.getSource().getSender().sendMessage(
+                Component.translatable("commands.effect.clear.everything.success.single").arguments(
+                        target.displayName()
+                )
         );
 
         return Command.SINGLE_SUCCESS;
