@@ -1,0 +1,9 @@
+name: Doppelganger
+version: '${version}'
+
+main: justjabka.doppelganger.Doppelganger
+bootstrapper: justjabka.doppelganger.DoppelgangerBootstrap
+api-version: '26.3'
+load: POSTWORLD
+
+authors: [ JustJabka ]
