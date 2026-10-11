@@ -114,7 +114,7 @@ public class EffectInstance implements PersistentHolder {
         this.duration -= 1;
     }
 
-    public boolean update(EffectInstance takeOver) {
+    public boolean update(LivingEntity entity, EffectInstance takeOver) {
         boolean changed = false;
 
         if (!takeOver.effect.equals(this.effect)) {
@@ -136,6 +136,11 @@ public class EffectInstance implements PersistentHolder {
         if (takeOver.visible != this.visible) {
             this.visible = takeOver.visible;
             changed = true;
+        }
+
+        if (changed) {
+            updateEntityData(entity);
+            this.effect.onUpdated(entity, this.amplifier);
         }
 
         return changed;

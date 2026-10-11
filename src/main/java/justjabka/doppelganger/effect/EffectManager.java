@@ -79,18 +79,15 @@ public final class EffectManager {
         return null;
     }
 
-    public static boolean applyEffect(LivingEntity entity, EffectInstance newInstance) {
-        EffectInstance existingEffect = getActiveEffect(entity, newInstance.getEffect());
+    public static boolean applyEffect(LivingEntity entity, EffectInstance newEffect) {
+        EffectInstance currentEffect = getActiveEffect(entity, newEffect.getEffect());
 
-        if (existingEffect == null) {
-            newInstance.start(entity);
-            return true;
-        } else if (existingEffect.update(newInstance)) {
-            existingEffect.getEffect().onUpdated(entity, existingEffect.getAmplifier());
+        if (currentEffect == null) {
+            newEffect.start(entity);
             return true;
         }
 
-        return false;
+        return currentEffect.update(entity, newEffect);
     }
 
     public static boolean clearEffect(LivingEntity entity, EffectInstance effect) {
