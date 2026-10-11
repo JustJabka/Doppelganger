@@ -32,25 +32,29 @@ public final class DoppelgangerItems {
                 .build()
         );
 
-        // Add marker
+        // TODO: add potion description
+
+        storeEffectHolder(effect, holder, item);
+
+        return item;
+    }
+
+    private static void storeEffectHolder(EffectInstance effect, EffectHolder holder, ItemStack item) {
         ItemMeta meta = item.getItemMeta();
-
-        NamespacedKey markerKey = Doppelganger.key(holder.toString());
-
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         PersistentDataContainer container = pdc.getOrDefault(EFFECT_HOLDER_KEY, PersistentDataType.TAG_CONTAINER, pdc.getAdapterContext().newPersistentDataContainer());
 
+        // Store effect holder
+        NamespacedKey markerKey = Doppelganger.key(holder.toString());
         container.set(TYPE_KEY, PersistentDataType.STRING, markerKey.asString());
 
+        // Store effect instance
         container.set(ID_KEY, PersistentDataType.STRING, effect.getKey().asString());
         container.set(EffectManager.DURATION_KEY, PersistentDataType.INTEGER, effect.getDuration());
         container.set(EffectManager.AMPLIFIER_KEY, PersistentDataType.INTEGER, effect.getAmplifier());
         container.set(EffectManager.PARTICLES_KEY, PersistentDataType.BOOLEAN, effect.isVisible());
 
         pdc.set(EFFECT_HOLDER_KEY, PersistentDataType.TAG_CONTAINER, container);
-
         item.setItemMeta(meta);
-
-        return item;
     }
 }
