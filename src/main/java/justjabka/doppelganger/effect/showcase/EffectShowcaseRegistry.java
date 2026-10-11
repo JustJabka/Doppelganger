@@ -7,6 +7,7 @@ public class EffectShowcaseRegistry {
 
     public static void register() {
         registerEffect(new BleedingEffect());
+        registerEffect(new IronSkinEffect());
     }
 
     private static void registerEffect(Effect effect) {
