@@ -1,207 +1,257 @@
 package justjabka.doppelganger.command;
 
-import com.mojang.brigadier.Command;
+import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.EntitySelectorArgumentResolver;
 import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.command.argument.EffectArgument;
-import justjabka.doppelganger.effect.EffectManager;
 import justjabka.doppelganger.effect.Effect;
 import justjabka.doppelganger.effect.EffectInstance;
+import justjabka.doppelganger.effect.EffectManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.jspecify.annotations.NonNull;
 
-// TODO: add exceptions
+import java.util.List;
+
 public class DEffect {
+    private static final SimpleCommandExceptionType ERROR_GIVE_FAILED = new SimpleCommandExceptionType(
+            MessageComponentSerializer.message().serialize(
+                    Component.translatable("commands.effect.give.failed")
+            )
+    );
+    private static final SimpleCommandExceptionType ERROR_CLEAR_EVERYTHING_FAILED = new SimpleCommandExceptionType(
+            MessageComponentSerializer.message().serialize(
+                    Component.translatable("commands.effect.clear.everything.failed")
+            )
+    );
+    private static final SimpleCommandExceptionType ERROR_CLEAR_SPECIFIC_FAILED = new SimpleCommandExceptionType(
+            MessageComponentSerializer.message().serialize(
+                    Component.translatable("commands.effect.clear.specific.failed")
+            )
+    );
+    public static final TranslatableComponent RESPONSE_GIVE_SINGLE = Component.translatable("commands.effect.give.success.single");
+    public static final TranslatableComponent RESPONSE_GIVE_MULTIPLE = Component.translatable("commands.effect.give.success.multiple");
+
+    public static final TranslatableComponent RESPONSE_CLEAR_EVERYTHING_SINGLE = Component.translatable("commands.effect.clear.everything.success.single");
+    public static final TranslatableComponent RESPONSE_CLEAR_EVERYTHING_MULTIPLE = Component.translatable("commands.effect.clear.everything.success.multiple");
+
+    public static final TranslatableComponent RESPONSE_CLEAR_SPECIFIC_SINGLE = Component.translatable("commands.effect.clear.specific.success.single");
+    public static final TranslatableComponent RESPONSE_CLEAR_SPECIFIC_MULTIPLE = Component.translatable("commands.effect.clear.specific.success.multiple");
+
     public static LiteralCommandNode<CommandSourceStack> build() {
         return Commands.literal("deffect")
-                .requires(ctx -> ctx.getSender().hasPermission(
-                        "%s.command.deffect".formatted(Doppelganger.NAMESPACE))
-                )
-                .then(Commands.literal("give")
-                        .then(Commands.argument("target", ArgumentTypes.entity())
+                .requires(ctx -> ctx.getSender().hasPermission("%s.command.deffect".formatted(Doppelganger.NAMESPACE)))
+                .then(Commands.literal("clear")
+                        .executes(ctx ->
+                                clearEffects(ctx.getSource(), ImmutableList.of(ctx.getSource().getEntityOrThrow()))
+                        )
+                        .then(Commands.argument("targets", ArgumentTypes.entities())
+                                .executes(ctx ->
+                                        clearEffects(ctx.getSource(), getEntities(ctx))
+                                )
                                 .then(Commands.argument("effect", new EffectArgument())
-                                        .executes(ctx -> {
-                                            final LivingEntity target = getTarget(ctx);
-                                            final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                            EffectInstance instance = new EffectInstance(effect);
-                                            EffectManager.applyEffect(target, instance);
-
-                                            sendGiveSuccessMessage(ctx, effect, target);
-
-                                            return Command.SINGLE_SUCCESS;
-                                        })
-                                        .then(Commands.argument("duration", IntegerArgumentType.integer(0, EffectManager.MAX_DURATION))
-                                                .executes(ctx -> {
-                                                    final LivingEntity target = getTarget(ctx);
-                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                                    final int duration = IntegerArgumentType.getInteger(ctx, "duration");
-
-                                                    EffectInstance instance = new EffectInstance(effect, duration);
-                                                    EffectManager.applyEffect(target, instance);
-
-                                                    sendGiveSuccessMessage(ctx, effect, target);
-
-                                                    return Command.SINGLE_SUCCESS;
-                                                })
-                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
-                                                        .executes(ctx -> {
-                                                            final LivingEntity target = getTarget(ctx);
-                                                            final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                                            final int duration = IntegerArgumentType.getInteger(ctx, "duration");
-                                                            final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
-
-                                                            EffectInstance instance = new EffectInstance(effect, duration, amplifier);
-                                                            EffectManager.applyEffect(target, instance);
-
-                                                            sendGiveSuccessMessage(ctx, effect, target);
-
-                                                            return Command.SINGLE_SUCCESS;
-                                                        })
-                                                        .then(Commands.argument("hideParticles", BoolArgumentType.bool())
-                                                                .executes(ctx -> {
-                                                                    final LivingEntity target = getTarget(ctx);
-                                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                                                    final int duration = IntegerArgumentType.getInteger(ctx, "duration");
-                                                                    final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
-                                                                    final boolean visibility = !BoolArgumentType.getBool(ctx, "hideParticles");
-
-                                                                    EffectInstance instance = new EffectInstance(effect, duration, amplifier, visibility);
-                                                                    EffectManager.applyEffect(target, instance);
-
-                                                                    sendGiveSuccessMessage(ctx, effect, target);
-
-                                                                    return Command.SINGLE_SUCCESS;
-                                                                })
-                                                        )
-                                                )
-                                        )
-                                        .then(Commands.literal("infinite")
-                                                .executes(ctx -> {
-                                                    final LivingEntity target = getTarget(ctx);
-                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                                    EffectInstance instance = new EffectInstance(effect, EffectManager.INFINITE_DURATION);
-                                                    EffectManager.applyEffect(target, instance);
-
-                                                    sendGiveSuccessMessage(ctx, effect, target);
-
-                                                    return Command.SINGLE_SUCCESS;
-                                                })
-                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
-                                                        .executes(ctx -> {
-                                                            final LivingEntity target = getTarget(ctx);
-                                                            final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                                            final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
-
-                                                            EffectInstance instance = new EffectInstance(effect, EffectManager.INFINITE_DURATION, amplifier);
-                                                            EffectManager.applyEffect(target, instance);
-
-                                                            sendGiveSuccessMessage(ctx, effect, target);
-
-                                                            return Command.SINGLE_SUCCESS;
-                                                        })
-                                                        .then(Commands.argument("hideParticles", BoolArgumentType.bool())
-                                                                .executes(ctx -> {
-                                                                    final LivingEntity target = getTarget(ctx);
-                                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                                                    final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
-                                                                    final boolean visibility = !BoolArgumentType.getBool(ctx, "hideParticles");
-
-                                                                    EffectInstance instance = new EffectInstance(effect, EffectManager.INFINITE_DURATION, amplifier, visibility);
-                                                                    EffectManager.applyEffect(target, instance);
-
-                                                                    sendGiveSuccessMessage(ctx, effect, target);
-
-                                                                    return Command.SINGLE_SUCCESS;
-                                                                })
-                                                        )
-                                                )
+                                        .executes(ctx ->
+                                                clearEffect(ctx.getSource(), getEntities(ctx), getEffect(ctx))
                                         )
                                 )
                         )
                 )
-                .then(Commands.literal("clear")
-                        .executes(ctx -> {
-                            final Player target = ctx.getSource().getPlayerOrThrow();
-
-                            EffectManager.clearAllEffects(target);
-                            sendClearAllSuccessMessage(ctx, target);
-
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(Commands.argument("target", ArgumentTypes.player())
-                                .executes(ctx -> {
-                                    final LivingEntity target = getTarget(ctx);
-
-                                    EffectManager.clearAllEffects(target);
-                                    sendClearAllSuccessMessage(ctx, target);
-
-                                    return Command.SINGLE_SUCCESS;
-                                })
+                .then(Commands.literal("give")
+                        .then(Commands.argument("targets", ArgumentTypes.entities())
                                 .then(Commands.argument("effect", new EffectArgument())
-                                        .executes(ctx -> {
-                                            final LivingEntity target = getTarget(ctx);
-
-                                            final Effect effect = ctx.getArgument("effect", Effect.class);
-
-                                            EffectInstance activeEffect = EffectManager.getActiveEffect(target, effect);
-                                            if (activeEffect != null) {
-                                                activeEffect.end(target);
-                                                sendClearSuccessMessage(ctx, effect, target);
-                                            }
-
-                                            return Command.SINGLE_SUCCESS;
-                                        })
+                                        .executes(
+                                                ctx -> giveEffect(
+                                                        ctx.getSource(),
+                                                        getEntities(ctx),
+                                                        getEffect(ctx),
+                                                        EffectManager.DEFAULT_DURATION,
+                                                        EffectManager.DEFAULT_AMPLIFIER,
+                                                        EffectManager.DEFAULT_VISIBILITY
+                                                )
+                                        )
+                                        .then(Commands.argument("duration", IntegerArgumentType.integer(1, EffectManager.MAX_DURATION))
+                                                .executes(
+                                                        ctx -> giveEffect(
+                                                                ctx.getSource(),
+                                                                getEntities(ctx),
+                                                                getEffect(ctx),
+                                                                IntegerArgumentType.getInteger(ctx, "duration"),
+                                                                EffectManager.DEFAULT_AMPLIFIER,
+                                                                EffectManager.DEFAULT_VISIBILITY
+                                                        )
+                                                )
+                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
+                                                        .executes(
+                                                                ctx -> giveEffect(
+                                                                        ctx.getSource(),
+                                                                        getEntities(ctx),
+                                                                        getEffect(ctx),
+                                                                        IntegerArgumentType.getInteger(ctx, "duration"),
+                                                                        IntegerArgumentType.getInteger(ctx, "amplifier"),
+                                                                        EffectManager.DEFAULT_VISIBILITY
+                                                                )
+                                                        )
+                                                        .then(Commands.argument("hideParticles", BoolArgumentType.bool())
+                                                                .executes(
+                                                                        ctx -> giveEffect(
+                                                                                ctx.getSource(),
+                                                                                getEntities(ctx),
+                                                                                getEffect(ctx),
+                                                                                IntegerArgumentType.getInteger(ctx, "duration"),
+                                                                                IntegerArgumentType.getInteger(ctx, "amplifier"),
+                                                                                !BoolArgumentType.getBool(ctx, "hideParticles")
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                        .then(Commands.literal("infinite")
+                                                .executes(
+                                                        ctx -> giveEffect(
+                                                                ctx.getSource(),
+                                                                getEntities(ctx),
+                                                                getEffect(ctx),
+                                                                EffectManager.INFINITE_DURATION,
+                                                                EffectManager.DEFAULT_AMPLIFIER,
+                                                                EffectManager.DEFAULT_VISIBILITY
+                                                        )
+                                                )
+                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
+                                                        .executes(
+                                                                ctx -> giveEffect(
+                                                                        ctx.getSource(),
+                                                                        getEntities(ctx),
+                                                                        getEffect(ctx),
+                                                                        EffectManager.INFINITE_DURATION,
+                                                                        IntegerArgumentType.getInteger(ctx, "amplifier"),
+                                                                        EffectManager.DEFAULT_VISIBILITY
+                                                                )
+                                                        )
+                                                        .then(Commands.argument("hideParticles", BoolArgumentType.bool())
+                                                                .executes(
+                                                                        ctx -> giveEffect(
+                                                                                ctx.getSource(),
+                                                                                getEntities(ctx),
+                                                                                getEffect(ctx),
+                                                                                EffectManager.INFINITE_DURATION,
+                                                                                IntegerArgumentType.getInteger(ctx, "amplifier"),
+                                                                                !BoolArgumentType.getBool(ctx, "hideParticles")
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
                                 )
                         )
                 )
                 .build();
     }
 
-    private static @NonNull LivingEntity getTarget(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        final EntitySelectorArgumentResolver resolver = ctx.getArgument("target", EntitySelectorArgumentResolver.class);
-        return (LivingEntity) resolver.resolve(ctx.getSource()).getFirst();
+    private static @NonNull List<Entity> getEntities(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        final EntitySelectorArgumentResolver resolver = ctx.getArgument("targets", EntitySelectorArgumentResolver.class);
+        return resolver.resolve(ctx.getSource());
     }
 
-    private static void sendGiveSuccessMessage(CommandContext<CommandSourceStack> ctx, Effect effect, LivingEntity target) {
-        ctx.getSource().getSender().sendMessage(
-                Component.translatable("commands.effect.give.success.single").arguments(
-                        Component.translatable(effect.translationKey()),
-                        target.name()
-                )
+    private static Effect getEffect(CommandContext<CommandSourceStack> ctx) {
+        return ctx.getArgument("effect", Effect.class);
+    }
+
+    private static void sendResponse(CommandSourceStack source, int successCount, TranslatableComponent single, TranslatableComponent multiple) {
+        source.getSender().sendMessage(
+                successCount == 1 ? single : multiple
         );
     }
 
-    private static void sendClearAllSuccessMessage(CommandContext<CommandSourceStack> ctx, LivingEntity target) {
-        ctx.getSource().getSender().sendMessage(
-                Component.translatable("commands.effect.clear.everything.success.single").arguments(
-                        target.name()
-                )
-        );
+    private static int giveEffect(
+            final CommandSourceStack source,
+            final List<? extends Entity> entities,
+            final Effect effect,
+            final int duration,
+            final int amplifier,
+            final boolean particles
+    ) throws CommandSyntaxException {
+        int successCount = 0;
+
+        for (Entity entity : entities) {
+            if (!(entity instanceof LivingEntity livingEntity)) continue;
+            EffectInstance instance = new EffectInstance(effect, duration, amplifier, particles);
+
+            if (!EffectManager.applyEffect(livingEntity, instance)) continue;
+            successCount++;
+        }
+
+        if (successCount == 0) {
+            throw ERROR_GIVE_FAILED.create();
+        }
+
+        sendResponse(source, successCount, RESPONSE_GIVE_SINGLE.arguments(
+                effect.getDisplayName(),
+                entities.getFirst().name()
+        ), RESPONSE_GIVE_MULTIPLE.arguments(
+                effect.getDisplayName(),
+                Component.text(successCount)
+        ));
+
+        return successCount;
     }
 
-    private static void sendClearSuccessMessage(CommandContext<CommandSourceStack> ctx, Effect effect, LivingEntity target) {
-        ctx.getSource().getSender().sendMessage(
-                Component.translatable("commands.effect.clear.specific.success.single").arguments(
-                        Component.translatable(effect.translationKey()),
-                        target.name()
-                )
-        );
+    private static int clearEffects(final CommandSourceStack source, final List<? extends Entity> entities) throws CommandSyntaxException {
+        int successCount = 0;
+
+        for (Entity entity : entities) {
+            if (!(entity instanceof LivingEntity livingEntity)) continue;
+
+            if (!EffectManager.clearAllEffects(livingEntity)) continue;
+            successCount++;
+        }
+
+        if (successCount == 0) {
+            throw ERROR_CLEAR_EVERYTHING_FAILED.create();
+        }
+
+        sendResponse(source, successCount, RESPONSE_CLEAR_EVERYTHING_SINGLE.arguments(
+                entities.getFirst().name()
+        ), RESPONSE_CLEAR_EVERYTHING_MULTIPLE.arguments(
+                Component.text(successCount)
+        ));
+
+        return successCount;
+    }
+
+    private static int clearEffect(final CommandSourceStack source, final List<? extends Entity> entities, final Effect effect) throws CommandSyntaxException {
+        int successCount = 0;
+
+        for (Entity entity : entities) {
+            if (!(entity instanceof LivingEntity livingEntity)) continue;
+
+            if (!EffectManager.clearEffect(livingEntity, effect)) continue;
+            successCount++;
+        }
+
+        if (successCount == 0) {
+            throw ERROR_CLEAR_SPECIFIC_FAILED.create();
+        }
+
+        sendResponse(source, successCount, RESPONSE_CLEAR_SPECIFIC_SINGLE.arguments(
+                effect.getDisplayName(),
+                entities.getFirst().name()
+        ), RESPONSE_CLEAR_SPECIFIC_MULTIPLE.arguments(
+                effect.getDisplayName(),
+                Component.text(successCount)
+        ));
+
+        return successCount;
     }
 }

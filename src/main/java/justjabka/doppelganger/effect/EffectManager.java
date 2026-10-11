@@ -79,27 +79,40 @@ public final class EffectManager {
         return null;
     }
 
-    public static void applyEffect(LivingEntity entity, EffectInstance newInstance) {
+    public static boolean applyEffect(LivingEntity entity, EffectInstance newInstance) {
         EffectInstance existingEffect = getActiveEffect(entity, newInstance.getEffect());
 
-        if (existingEffect != null) {
-            boolean changed = existingEffect.update(newInstance);
-            if (changed) existingEffect.getEffect().onUpdated(entity, existingEffect.getAmplifier());
-            return;
+        if (existingEffect == null) {
+            newInstance.start(entity);
+            return true;
+        } else if (existingEffect.update(newInstance)) {
+            existingEffect.getEffect().onUpdated(entity, existingEffect.getAmplifier());
+            return true;
         }
 
-        newInstance.start(entity);
+        return false;
     }
 
-    public static void clearEffect(LivingEntity entity, EffectInstance effect) {
+    public static boolean clearEffect(LivingEntity entity, EffectInstance effect) {
         effect.end(entity);
+        return true;
     }
 
-    public static void clearAllEffects(LivingEntity entity) {
+    public static boolean clearEffect(LivingEntity entity, Effect effect) {
+        EffectInstance instance = EffectManager.getActiveEffect(entity, effect);
+        if (instance == null) return false;
+
+        return EffectManager.clearEffect(entity, instance);
+    }
+
+    public static boolean clearAllEffects(LivingEntity entity) {
         Set<EffectInstance> activeEffects = getActiveEffects(entity);
+        if (activeEffects.isEmpty()) return false;
 
         for (EffectInstance effect : activeEffects) {
             clearEffect(entity, effect);
         }
+
+        return true;
     }
 }

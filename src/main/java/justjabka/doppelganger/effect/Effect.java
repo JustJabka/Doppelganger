@@ -1,6 +1,6 @@
 package justjabka.doppelganger.effect;
 
-import net.kyori.adventure.translation.Translatable;
+import justjabka.doppelganger.common.Translatable;
 import org.bukkit.Color;
 import org.bukkit.Keyed;
 import org.bukkit.entity.LivingEntity;
