@@ -1,6 +1,6 @@
 package justjabka.doppelganger.effect;
 
-import justjabka.doppelganger.effect.generic.BaseEffect;
+import justjabka.doppelganger.effect.generic.EffectInstance;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
@@ -15,9 +15,9 @@ public class EffectRunnable extends BukkitRunnable {
     public void run() {
         for (World world : Bukkit.getServer().getWorlds()) {
             for (LivingEntity entity : world.getLivingEntities()) {
-                Set<BaseEffect> activeEffects = EffectManager.getActiveEffects(entity);
+                Set<EffectInstance> activeEffects = EffectManager.getActiveEffects(entity);
 
-                for (BaseEffect effect : activeEffects) {
+                for (EffectInstance effect : activeEffects) {
                     effect.tick(entity);
                 }
             }

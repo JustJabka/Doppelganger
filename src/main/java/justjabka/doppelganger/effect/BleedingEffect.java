@@ -7,34 +7,35 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.LivingEntity;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BleedingEffect extends BaseEffect {
 
     @Override
-    public @NonNull NamespacedKey getKey() {
+    public NamespacedKey getKey() {
         return Doppelganger.key("bleeding");
     }
 
     @Override
-    public @NonNull String translationKey() {
+    public String translationKey() {
         return "effect.test.bleeding";
     }
 
     @Override
-    public @NonNull Color getColor() {
+    public Color getColor() {
         return Color.RED;
     }
 
     @Override
-    protected void onStart(LivingEntity entity) {}
+    public void onStart(LivingEntity entity, int amplifier) {}
 
     @Override
-    protected void onTick(LivingEntity entity) {
+    public void onTick(LivingEntity entity, int amplifier) {
         if (entity.getServer().getCurrentTick() % 20 != 0) return;
         if (entity.getHealth() <= 1) return;
 
-        final double damage = 2 * (1 + getAmplifier(entity));
+        final double damage = 2 * (1 + amplifier);
 
         entity.damage(damage, DamageSource.builder(DamageType.GENERIC)
                 .withDirectEntity(entity)
@@ -44,5 +45,8 @@ public class BleedingEffect extends BaseEffect {
     }
 
     @Override
-    protected void onEnd(LivingEntity entity) {}
+    public void onEnd(LivingEntity entity) {}
+
+    @Override
+    public void onUpdated(LivingEntity entity, int amplifier) {}
 }

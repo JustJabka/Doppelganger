@@ -14,6 +14,7 @@ import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.command.argument.EffectArgument;
 import justjabka.doppelganger.effect.EffectManager;
 import justjabka.doppelganger.effect.generic.BaseEffect;
+import justjabka.doppelganger.effect.generic.EffectInstance;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -33,7 +34,8 @@ public class DEffect {
                                             final LivingEntity target = getTarget(ctx);
                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
-                                            effect.start(target);
+                                            EffectInstance instance = new EffectInstance(effect);
+                                            EffectManager.applyEffect(target, instance);
 
                                             sendGiveSuccessMessage(ctx, effect, target);
 
@@ -46,7 +48,8 @@ public class DEffect {
 
                                                     final int duration = IntegerArgumentType.getInteger(ctx, "duration");
 
-                                                    effect.start(target, duration);
+                                                    EffectInstance instance = new EffectInstance(effect, duration);
+                                                    EffectManager.applyEffect(target, instance);
 
                                                     sendGiveSuccessMessage(ctx, effect, target);
 
@@ -60,7 +63,8 @@ public class DEffect {
                                                             final int duration = IntegerArgumentType.getInteger(ctx, "duration");
                                                             final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
 
-                                                            effect.start(target, duration, amplifier);
+                                                            EffectInstance instance = new EffectInstance(effect, duration, amplifier);
+                                                            EffectManager.applyEffect(target, instance);
 
                                                             sendGiveSuccessMessage(ctx, effect, target);
 
@@ -73,9 +77,10 @@ public class DEffect {
 
                                                                     final int duration = IntegerArgumentType.getInteger(ctx, "duration");
                                                                     final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
-                                                                    final boolean particles = !BoolArgumentType.getBool(ctx, "hideParticles");
+                                                                    final boolean visibility = !BoolArgumentType.getBool(ctx, "hideParticles");
 
-                                                                    effect.start(target, duration, amplifier, particles);
+                                                                    EffectInstance instance = new EffectInstance(effect, duration, amplifier, visibility);
+                                                                    EffectManager.applyEffect(target, instance);
 
                                                                     sendGiveSuccessMessage(ctx, effect, target);
 
@@ -89,7 +94,8 @@ public class DEffect {
                                                     final LivingEntity target = getTarget(ctx);
                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
-                                                    effect.start(target, EffectManager.INFINITE_DURATION);
+                                                    EffectInstance instance = new EffectInstance(effect, EffectManager.INFINITE_DURATION);
+                                                    EffectManager.applyEffect(target, instance);
 
                                                     sendGiveSuccessMessage(ctx, effect, target);
 
@@ -102,7 +108,8 @@ public class DEffect {
 
                                                             final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
 
-                                                            effect.start(target, EffectManager.INFINITE_DURATION, amplifier);
+                                                            EffectInstance instance = new EffectInstance(effect, EffectManager.INFINITE_DURATION, amplifier);
+                                                            EffectManager.applyEffect(target, instance);
 
                                                             sendGiveSuccessMessage(ctx, effect, target);
 
@@ -114,9 +121,10 @@ public class DEffect {
                                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                                     final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
-                                                                    final boolean particles = !BoolArgumentType.getBool(ctx, "hideParticles");
+                                                                    final boolean visibility = !BoolArgumentType.getBool(ctx, "hideParticles");
 
-                                                                    effect.start(target, EffectManager.INFINITE_DURATION, amplifier, particles);
+                                                                    EffectInstance instance = new EffectInstance(effect, EffectManager.INFINITE_DURATION, amplifier, visibility);
+                                                                    EffectManager.applyEffect(target, instance);
 
                                                                     sendGiveSuccessMessage(ctx, effect, target);
 
@@ -152,9 +160,11 @@ public class DEffect {
 
                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
-                                            effect.end(target);
-
-                                            sendClearSuccessMessage(ctx, effect, target);
+                                            EffectInstance activeEffect = EffectManager.getActiveEffect(target, effect);
+                                            if (activeEffect != null) {
+                                                activeEffect.end(target);
+                                                sendClearSuccessMessage(ctx, effect, target);
+                                            }
 
                                             return Command.SINGLE_SUCCESS;
                                         })
