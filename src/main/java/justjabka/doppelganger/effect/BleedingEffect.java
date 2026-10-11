@@ -31,10 +31,12 @@ public class BleedingEffect extends BaseEffect {
 
     @Override
     public void onTick(Player player) {
-        if (getDuration(player) % 20 != 0) return;
+        if (player.getServer().getCurrentTick() % 20 != 0) return;
         if (player.getHealth() <= 1) return;
 
-        player.damage(2, DamageSource.builder(DamageType.GENERIC)
+        final double damage = 2 * (1 + getAmplifier(player));
+
+        player.damage(damage, DamageSource.builder(DamageType.GENERIC)
                 .withDirectEntity(player)
                 .withCausingEntity(player)
                 .build()
