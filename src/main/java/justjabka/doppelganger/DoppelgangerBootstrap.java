@@ -5,6 +5,7 @@ import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import justjabka.doppelganger.command.DAttribute;
 import justjabka.doppelganger.command.DEffect;
+import justjabka.doppelganger.command.DGive;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DoppelgangerBootstrap implements PluginBootstrap {
@@ -14,6 +15,7 @@ public class DoppelgangerBootstrap implements PluginBootstrap {
         context.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             event.registrar().register(DEffect.build());
             event.registrar().register(DAttribute.build());
+            event.registrar().register(DGive.build());
         });
     }
 }

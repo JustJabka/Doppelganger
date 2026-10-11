@@ -11,6 +11,10 @@ public abstract class Effect implements Keyed, Translatable {
 
     public abstract Color getColor();
 
+    public String getPotionName() {
+        return getKey().value();
+    }
+
     protected abstract void onStart(LivingEntity entity, int amplifier);
     protected abstract void onTick(LivingEntity entity, int amplifier);
     protected abstract void onEnd(LivingEntity entity);
