@@ -5,7 +5,7 @@ import justjabka.doppelganger.common.impl.AttributeRegistry;
 import justjabka.doppelganger.common.impl.EffectRegistry;
 import justjabka.doppelganger.effect.EffectListener;
 import justjabka.doppelganger.effect.EffectRunnable;
-import justjabka.doppelganger.effect.EffectTestRegistry;
+import justjabka.doppelganger.effect.showcase.EffectShowcaseRegistry;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,7 +33,7 @@ public final class Doppelganger extends JavaPlugin {
     @Override
     public void onEnable() {
         // TODO: move everything test/showcase to separate project
-        EffectTestRegistry.register();
+        EffectShowcaseRegistry.register();
         AttributeTestRegistry.register();
 
         // Listeners

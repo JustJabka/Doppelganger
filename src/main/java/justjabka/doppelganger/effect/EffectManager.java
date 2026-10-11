@@ -2,8 +2,6 @@ package justjabka.doppelganger.effect;
 
 import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.DoppelgangerRegistries;
-import justjabka.doppelganger.effect.generic.BaseEffect;
-import justjabka.doppelganger.effect.generic.EffectInstance;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -52,7 +50,7 @@ public final class EffectManager {
         final Set<EffectInstance> activeEffects = new HashSet<>();
 
         for (NamespacedKey key : container.getKeys()) {
-            BaseEffect effect = DoppelgangerRegistries.EFFECTS.get(key);
+            Effect effect = DoppelgangerRegistries.EFFECTS.get(key);
             if (effect == null) continue;
 
             PersistentDataContainer data = container.get(key, PersistentDataType.TAG_CONTAINER);
@@ -69,7 +67,7 @@ public final class EffectManager {
         return activeEffects;
     }
 
-    public static @Nullable EffectInstance getActiveEffect(LivingEntity entity, BaseEffect effect) {
+    public static @Nullable EffectInstance getActiveEffect(LivingEntity entity, Effect effect) {
         Set<EffectInstance> activeEffects = getActiveEffects(entity);
 
         for (EffectInstance instance : activeEffects) {

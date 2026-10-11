@@ -1,6 +1,5 @@
 package justjabka.doppelganger.effect;
 
-import justjabka.doppelganger.effect.generic.EffectInstance;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;

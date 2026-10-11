@@ -1,15 +1,15 @@
-package justjabka.doppelganger.effect;
+package justjabka.doppelganger.effect.showcase;
 
 import justjabka.doppelganger.DoppelgangerRegistries;
-import justjabka.doppelganger.effect.generic.BaseEffect;
+import justjabka.doppelganger.effect.Effect;
 
-public class EffectTestRegistry {
+public class EffectShowcaseRegistry {
 
     public static void register() {
         registerEffect(new BleedingEffect());
     }
 
-    private static void registerEffect(BaseEffect effect) {
+    private static void registerEffect(Effect effect) {
         DoppelgangerRegistries.EFFECTS.register(effect.getKey(), effect);
     }
 }

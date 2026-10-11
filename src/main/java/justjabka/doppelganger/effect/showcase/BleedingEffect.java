@@ -1,7 +1,7 @@
-package justjabka.doppelganger.effect;
+package justjabka.doppelganger.effect.showcase;
 
 import justjabka.doppelganger.Doppelganger;
-import justjabka.doppelganger.effect.generic.BaseEffect;
+import justjabka.doppelganger.effect.Effect;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
 import org.bukkit.damage.DamageSource;
@@ -10,7 +10,7 @@ import org.bukkit.entity.LivingEntity;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BleedingEffect extends BaseEffect {
+public class BleedingEffect extends Effect {
 
     @Override
     public NamespacedKey getKey() {

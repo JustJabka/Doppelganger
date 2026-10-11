@@ -1,8 +1,7 @@
-package justjabka.doppelganger.effect.generic;
+package justjabka.doppelganger.effect;
 
 import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.common.PersistentHolder;
-import justjabka.doppelganger.effect.EffectManager;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -16,33 +15,33 @@ public class EffectInstance implements PersistentHolder {
 
     private static final Random RANDOM = new Random();
 
-    private final BaseEffect effect;
+    private final Effect effect;
     private int duration;
     private int amplifier;
     private boolean visible;
 
-    public EffectInstance(BaseEffect effect) {
+    public EffectInstance(Effect effect) {
         this.effect = effect;
         this.duration = EffectManager.DEFAULT_DURATION;
         this.amplifier = EffectManager.DEFAULT_AMPLIFIER;
         this.visible = EffectManager.DEFAULT_VISIBILITY;
     }
 
-    public EffectInstance(BaseEffect effect, int duration) {
+    public EffectInstance(Effect effect, int duration) {
         this.effect = effect;
         this.duration = duration;
         this.amplifier = EffectManager.DEFAULT_AMPLIFIER;
         this.visible = EffectManager.DEFAULT_VISIBILITY;
     }
 
-    public EffectInstance(BaseEffect effect, int duration, int amplifier) {
+    public EffectInstance(Effect effect, int duration, int amplifier) {
         this.effect = effect;
         this.duration = duration;
         this.amplifier = amplifier;
         this.visible = EffectManager.DEFAULT_VISIBILITY;
     }
 
-    public EffectInstance(BaseEffect effect, int duration, int amplifier, boolean visible) {
+    public EffectInstance(Effect effect, int duration, int amplifier, boolean visible) {
         this.effect = effect;
         this.duration = duration;
         this.amplifier = amplifier;
@@ -59,7 +58,7 @@ public class EffectInstance implements PersistentHolder {
         return EffectManager.EFFECTS_KEY;
     }
 
-    public BaseEffect getEffect() {
+    public Effect getEffect() {
         return this.effect;
     }
 

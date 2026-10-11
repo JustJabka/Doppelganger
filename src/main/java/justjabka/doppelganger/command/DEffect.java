@@ -13,8 +13,8 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.EntitySele
 import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.command.argument.EffectArgument;
 import justjabka.doppelganger.effect.EffectManager;
-import justjabka.doppelganger.effect.generic.BaseEffect;
-import justjabka.doppelganger.effect.generic.EffectInstance;
+import justjabka.doppelganger.effect.Effect;
+import justjabka.doppelganger.effect.EffectInstance;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -32,7 +32,7 @@ public class DEffect {
                                 .then(Commands.argument("effect", new EffectArgument())
                                         .executes(ctx -> {
                                             final LivingEntity target = getTarget(ctx);
-                                            final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                            final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                             EffectInstance instance = new EffectInstance(effect);
                                             EffectManager.applyEffect(target, instance);
@@ -44,7 +44,7 @@ public class DEffect {
                                         .then(Commands.argument("duration", IntegerArgumentType.integer(0, EffectManager.MAX_DURATION))
                                                 .executes(ctx -> {
                                                     final LivingEntity target = getTarget(ctx);
-                                                    final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                                     final int duration = IntegerArgumentType.getInteger(ctx, "duration");
 
@@ -58,7 +58,7 @@ public class DEffect {
                                                 .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
                                                         .executes(ctx -> {
                                                             final LivingEntity target = getTarget(ctx);
-                                                            final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                                            final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                                             final int duration = IntegerArgumentType.getInteger(ctx, "duration");
                                                             final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
@@ -73,7 +73,7 @@ public class DEffect {
                                                         .then(Commands.argument("hideParticles", BoolArgumentType.bool())
                                                                 .executes(ctx -> {
                                                                     final LivingEntity target = getTarget(ctx);
-                                                                    final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                                                     final int duration = IntegerArgumentType.getInteger(ctx, "duration");
                                                                     final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
@@ -92,7 +92,7 @@ public class DEffect {
                                         .then(Commands.literal("infinite")
                                                 .executes(ctx -> {
                                                     final LivingEntity target = getTarget(ctx);
-                                                    final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                                     EffectInstance instance = new EffectInstance(effect, EffectManager.INFINITE_DURATION);
                                                     EffectManager.applyEffect(target, instance);
@@ -104,7 +104,7 @@ public class DEffect {
                                                 .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
                                                         .executes(ctx -> {
                                                             final LivingEntity target = getTarget(ctx);
-                                                            final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                                            final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                                             final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
 
@@ -118,7 +118,7 @@ public class DEffect {
                                                         .then(Commands.argument("hideParticles", BoolArgumentType.bool())
                                                                 .executes(ctx -> {
                                                                     final LivingEntity target = getTarget(ctx);
-                                                                    final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                                                    final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                                                     final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
                                                                     final boolean visibility = !BoolArgumentType.getBool(ctx, "hideParticles");
@@ -158,7 +158,7 @@ public class DEffect {
                                         .executes(ctx -> {
                                             final LivingEntity target = getTarget(ctx);
 
-                                            final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
+                                            final Effect effect = ctx.getArgument("effect", Effect.class);
 
                                             EffectInstance activeEffect = EffectManager.getActiveEffect(target, effect);
                                             if (activeEffect != null) {
@@ -179,7 +179,7 @@ public class DEffect {
         return (LivingEntity) resolver.resolve(ctx.getSource()).getFirst();
     }
 
-    private static void sendGiveSuccessMessage(CommandContext<CommandSourceStack> ctx, BaseEffect effect, LivingEntity target) {
+    private static void sendGiveSuccessMessage(CommandContext<CommandSourceStack> ctx, Effect effect, LivingEntity target) {
         ctx.getSource().getSender().sendMessage(
                 Component.translatable("commands.effect.give.success.single").arguments(
                         Component.translatable(effect.translationKey()),
@@ -196,7 +196,7 @@ public class DEffect {
         );
     }
 
-    private static void sendClearSuccessMessage(CommandContext<CommandSourceStack> ctx, BaseEffect effect, LivingEntity target) {
+    private static void sendClearSuccessMessage(CommandContext<CommandSourceStack> ctx, Effect effect, LivingEntity target) {
         ctx.getSource().getSender().sendMessage(
                 Component.translatable("commands.effect.clear.specific.success.single").arguments(
                         Component.translatable(effect.translationKey()),
