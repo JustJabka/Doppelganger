@@ -27,10 +27,10 @@ public class BleedingEffect extends BaseEffect {
     }
 
     @Override
-    public void onStart(Player player) {}
+    protected void onStart(Player player) {}
 
     @Override
-    public void onTick(Player player) {
+    protected void onTick(Player player) {
         if (player.getServer().getCurrentTick() % 20 != 0) return;
         if (player.getHealth() <= 1) return;
 
@@ -44,5 +44,5 @@ public class BleedingEffect extends BaseEffect {
     }
 
     @Override
-    public void onEnd(Player player) {}
+    protected void onEnd(Player player) {}
 }

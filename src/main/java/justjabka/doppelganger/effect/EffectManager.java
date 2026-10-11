@@ -15,14 +15,26 @@ import java.util.Set;
 @NullMarked
 public final class EffectManager {
 
-    public static final NamespacedKey EFFECTS_KEY = Doppelganger.key("effects");
-
-    public static final NamespacedKey DURATION_KEY = Doppelganger.key("duration");
-    public static final NamespacedKey AMPLIFIER_KEY = Doppelganger.key("amplifier");
-    public static final NamespacedKey PARTICLES_KEY = Doppelganger.key("particles");
-
     private EffectManager() {}
 
+    // Keys
+    public static final NamespacedKey EFFECTS_KEY = Doppelganger.key("effects");
+    public static final NamespacedKey DURATION_KEY = Doppelganger.key("duration");
+    public static final NamespacedKey AMPLIFIER_KEY = Doppelganger.key("amplifier");
+
+    public static final NamespacedKey PARTICLES_KEY = Doppelganger.key("particles");
+
+    // Constants
+    public static final int DEFAULT_DURATION = 90 * 20;
+    public static final int DEFAULT_AMPLIFIER = 0;
+
+    public static final boolean DEFAULT_PARTICLES = true;
+    public static final int INFINITE_DURATION = -1;
+
+    public static final int MAX_DURATION = Integer.MAX_VALUE;
+    public static final int MAX_AMPLIFIER = 255;
+
+    // Methods
     public static Set<BaseEffect> getActiveEffects(Player player) {
         PersistentDataContainer pdc = player.getPersistentDataContainer();
         PersistentDataContainer container = pdc.getOrDefault(

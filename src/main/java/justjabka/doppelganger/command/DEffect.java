@@ -38,7 +38,7 @@ public class DEffect {
 
                                             return Command.SINGLE_SUCCESS;
                                         })
-                                        .then(Commands.argument("duration", IntegerArgumentType.integer(0, Integer.MAX_VALUE))
+                                        .then(Commands.argument("duration", IntegerArgumentType.integer(0, EffectManager.MAX_DURATION))
                                                 .executes(ctx -> {
                                                     final Player target = getPlayer(ctx);
                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
@@ -51,7 +51,7 @@ public class DEffect {
 
                                                     return Command.SINGLE_SUCCESS;
                                                 })
-                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, 255))
+                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
                                                         .executes(ctx -> {
                                                             final Player target = getPlayer(ctx);
                                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
@@ -88,20 +88,20 @@ public class DEffect {
                                                     final Player target = getPlayer(ctx);
                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
-                                                    effect.start(target, BaseEffect.INFINITE_DURATION);
+                                                    effect.start(target, EffectManager.INFINITE_DURATION);
 
                                                     sendGiveSuccessMessage(ctx, effect, target);
 
                                                     return Command.SINGLE_SUCCESS;
                                                 })
-                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, 255))
+                                                .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
                                                         .executes(ctx -> {
                                                             final Player target = getPlayer(ctx);
                                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                             final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
 
-                                                            effect.start(target, BaseEffect.INFINITE_DURATION, amplifier);
+                                                            effect.start(target, EffectManager.INFINITE_DURATION, amplifier);
 
                                                             sendGiveSuccessMessage(ctx, effect, target);
 
@@ -115,7 +115,7 @@ public class DEffect {
                                                                     final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
                                                                     final boolean particles = !BoolArgumentType.getBool(ctx, "hideParticles");
 
-                                                                    effect.start(target, BaseEffect.INFINITE_DURATION, amplifier, particles);
+                                                                    effect.start(target, EffectManager.INFINITE_DURATION, amplifier, particles);
 
                                                                     sendGiveSuccessMessage(ctx, effect, target);
 

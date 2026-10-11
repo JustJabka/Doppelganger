@@ -14,12 +14,6 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
 
     private static final Random RANDOM = new Random();
 
-    public static final int DEFAULT_DURATION = 90 * 20;
-    public static final int DEFAULT_AMPLIFIER = 0;
-    public static final boolean DEFAULT_PARTICLES = true;
-
-    public static final int INFINITE_DURATION = -1;
-
     @Override
     public NamespacedKey getContainerKey() {
         return EffectManager.EFFECTS_KEY;
@@ -29,7 +23,7 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
         return getEntryInt(player, EffectManager.DURATION_KEY);
     }
 
-    public void setDuration(Player player, @Range(from = 0, to = Integer.MAX_VALUE) int duration) {
+    public void setDuration(Player player, @Range(from = 0, to = EffectManager.MAX_DURATION) int duration) {
         setEntryInt(player, EffectManager.DURATION_KEY, duration);
     }
 
@@ -37,7 +31,7 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
         return getEntryInt(player, EffectManager.AMPLIFIER_KEY);
     }
 
-    public void setAmplifier(Player player, @Range(from = 0, to = 255) int duration) {
+    public void setAmplifier(Player player, @Range(from = 0, to = EffectManager.MAX_AMPLIFIER) int duration) {
         setEntryInt(player, EffectManager.AMPLIFIER_KEY, duration);
     }
 
@@ -54,28 +48,31 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
     }
 
     public boolean isEnded(Player player) {
-        return getDuration(player) <= 0 && !isInfinite(player);
+        return getDuration(player) <= 0 && isFinite(player);
     }
 
     public boolean isInfinite(Player player) {
-        return getDuration(player) == INFINITE_DURATION;
+        return getDuration(player) == EffectManager.INFINITE_DURATION;
     }
 
-    public abstract void onStart(Player player);
-    public abstract void onTick(Player player);
+    public boolean isFinite(Player player) {
+        return !isInfinite(player);
+    }
 
-    public abstract void onEnd(Player player);
+    protected abstract void onStart(Player player);
+    protected abstract void onTick(Player player);
+    protected abstract void onEnd(Player player);
 
     public void start(Player player) {
-        start(player, DEFAULT_DURATION);
+        start(player, EffectManager.DEFAULT_DURATION);
     }
 
     public void start(Player player, int duration) {
-        start(player, duration, DEFAULT_AMPLIFIER);
+        start(player, duration, EffectManager.DEFAULT_AMPLIFIER);
     }
 
     public void start(Player player, int duration, int amplifier) {
-        start(player, duration, amplifier, DEFAULT_PARTICLES);
+        start(player, duration, amplifier, EffectManager.DEFAULT_PARTICLES);
     }
 
     public void start(Player player, int duration, int amplifier, boolean particles) {
@@ -92,7 +89,7 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
             return;
         }
 
-        if (!isInfinite(player)) {
+        if (isFinite(player)) {
             decreaseDuration(player);
         }
 
