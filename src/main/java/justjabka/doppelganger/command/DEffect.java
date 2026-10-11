@@ -9,12 +9,13 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.EntitySelectorArgumentResolver;
 import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.command.argument.EffectArgument;
 import justjabka.doppelganger.effect.EffectManager;
 import justjabka.doppelganger.effect.generic.BaseEffect;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NonNull;
 
@@ -26,10 +27,10 @@ public class DEffect {
                         "%s.command.deffect".formatted(Doppelganger.NAMESPACE))
                 )
                 .then(Commands.literal("give")
-                        .then(Commands.argument("target", ArgumentTypes.player())
+                        .then(Commands.argument("target", ArgumentTypes.entity())
                                 .then(Commands.argument("effect", new EffectArgument())
                                         .executes(ctx -> {
-                                            final Player target = getPlayer(ctx);
+                                            final LivingEntity target = getTarget(ctx);
                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                             effect.start(target);
@@ -40,7 +41,7 @@ public class DEffect {
                                         })
                                         .then(Commands.argument("duration", IntegerArgumentType.integer(0, EffectManager.MAX_DURATION))
                                                 .executes(ctx -> {
-                                                    final Player target = getPlayer(ctx);
+                                                    final LivingEntity target = getTarget(ctx);
                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                     final int duration = IntegerArgumentType.getInteger(ctx, "duration");
@@ -53,7 +54,7 @@ public class DEffect {
                                                 })
                                                 .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
                                                         .executes(ctx -> {
-                                                            final Player target = getPlayer(ctx);
+                                                            final LivingEntity target = getTarget(ctx);
                                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                             final int duration = IntegerArgumentType.getInteger(ctx, "duration");
@@ -67,7 +68,7 @@ public class DEffect {
                                                         })
                                                         .then(Commands.argument("hideParticles", BoolArgumentType.bool())
                                                                 .executes(ctx -> {
-                                                                    final Player target = getPlayer(ctx);
+                                                                    final LivingEntity target = getTarget(ctx);
                                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                                     final int duration = IntegerArgumentType.getInteger(ctx, "duration");
@@ -85,7 +86,7 @@ public class DEffect {
                                         )
                                         .then(Commands.literal("infinite")
                                                 .executes(ctx -> {
-                                                    final Player target = getPlayer(ctx);
+                                                    final LivingEntity target = getTarget(ctx);
                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                     effect.start(target, EffectManager.INFINITE_DURATION);
@@ -96,7 +97,7 @@ public class DEffect {
                                                 })
                                                 .then(Commands.argument("amplifier", IntegerArgumentType.integer(0, EffectManager.MAX_AMPLIFIER))
                                                         .executes(ctx -> {
-                                                            final Player target = getPlayer(ctx);
+                                                            final LivingEntity target = getTarget(ctx);
                                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                             final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
@@ -109,7 +110,7 @@ public class DEffect {
                                                         })
                                                         .then(Commands.argument("hideParticles", BoolArgumentType.bool())
                                                                 .executes(ctx -> {
-                                                                    final Player target = getPlayer(ctx);
+                                                                    final LivingEntity target = getTarget(ctx);
                                                                     final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
                                                                     final int amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
@@ -138,7 +139,7 @@ public class DEffect {
                         })
                         .then(Commands.argument("target", ArgumentTypes.player())
                                 .executes(ctx -> {
-                                    final Player target = getPlayer(ctx);
+                                    final LivingEntity target = getTarget(ctx);
 
                                     EffectManager.clearAllEffects(target);
                                     sendClearAllSuccessMessage(ctx, target);
@@ -147,7 +148,7 @@ public class DEffect {
                                 })
                                 .then(Commands.argument("effect", new EffectArgument())
                                         .executes(ctx -> {
-                                            final Player target = getPlayer(ctx);
+                                            final LivingEntity target = getTarget(ctx);
 
                                             final BaseEffect effect = ctx.getArgument("effect", BaseEffect.class);
 
@@ -163,33 +164,33 @@ public class DEffect {
                 .build();
     }
 
-    private static @NonNull Player getPlayer(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        final PlayerSelectorArgumentResolver resolver = ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
-        return resolver.resolve(ctx.getSource()).getFirst();
+    private static @NonNull LivingEntity getTarget(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        final EntitySelectorArgumentResolver resolver = ctx.getArgument("target", EntitySelectorArgumentResolver.class);
+        return (LivingEntity) resolver.resolve(ctx.getSource()).getFirst();
     }
 
-    private static void sendGiveSuccessMessage(CommandContext<CommandSourceStack> ctx, BaseEffect effect, Player target) {
+    private static void sendGiveSuccessMessage(CommandContext<CommandSourceStack> ctx, BaseEffect effect, LivingEntity target) {
         ctx.getSource().getSender().sendMessage(
                 Component.translatable("commands.effect.give.success.single").arguments(
                         Component.translatable(effect.translationKey()),
-                        target.displayName()
+                        target.name()
                 )
         );
     }
 
-    private static void sendClearAllSuccessMessage(CommandContext<CommandSourceStack> ctx, Player target) {
+    private static void sendClearAllSuccessMessage(CommandContext<CommandSourceStack> ctx, LivingEntity target) {
         ctx.getSource().getSender().sendMessage(
                 Component.translatable("commands.effect.clear.everything.success.single").arguments(
-                        target.displayName()
+                        target.name()
                 )
         );
     }
 
-    private static void sendClearSuccessMessage(CommandContext<CommandSourceStack> ctx, BaseEffect effect, Player target) {
+    private static void sendClearSuccessMessage(CommandContext<CommandSourceStack> ctx, BaseEffect effect, LivingEntity target) {
         ctx.getSource().getSender().sendMessage(
                 Component.translatable("commands.effect.clear.specific.success.single").arguments(
                         Component.translatable(effect.translationKey()),
-                        target.displayName()
+                        target.name()
                 )
         );
     }

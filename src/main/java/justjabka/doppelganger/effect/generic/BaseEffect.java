@@ -4,7 +4,7 @@ import justjabka.doppelganger.common.PersistentHolder;
 import justjabka.doppelganger.effect.EffectManager;
 import net.kyori.adventure.translation.Translatable;
 import org.bukkit.*;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.Range;
 import org.jspecify.annotations.NonNull;
 
@@ -19,101 +19,101 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
         return EffectManager.EFFECTS_KEY;
     }
 
-    public int getDuration(Player player) {
-        return getEntryInt(player, EffectManager.DURATION_KEY);
+    public int getDuration(LivingEntity entity) {
+        return getEntryInt(entity, EffectManager.DURATION_KEY);
     }
 
-    public void setDuration(Player player, @Range(from = 0, to = EffectManager.MAX_DURATION) int duration) {
-        setEntryInt(player, EffectManager.DURATION_KEY, duration);
+    public void setDuration(LivingEntity entity, @Range(from = 0, to = EffectManager.MAX_DURATION) int duration) {
+        setEntryInt(entity, EffectManager.DURATION_KEY, duration);
     }
 
-    public int getAmplifier(Player player) {
-        return getEntryInt(player, EffectManager.AMPLIFIER_KEY);
+    public int getAmplifier(LivingEntity entity) {
+        return getEntryInt(entity, EffectManager.AMPLIFIER_KEY);
     }
 
-    public void setAmplifier(Player player, @Range(from = 0, to = EffectManager.MAX_AMPLIFIER) int duration) {
-        setEntryInt(player, EffectManager.AMPLIFIER_KEY, duration);
+    public void setAmplifier(LivingEntity entity, @Range(from = 0, to = EffectManager.MAX_AMPLIFIER) int duration) {
+        setEntryInt(entity, EffectManager.AMPLIFIER_KEY, duration);
     }
 
     // TODO: make particle fully configurable
     @NonNull
     public abstract Color getColor();
 
-    public boolean getParticles(Player player) {
-        return getEntryBoolean(player, EffectManager.PARTICLES_KEY);
+    public boolean getParticles(LivingEntity entity) {
+        return getEntryBoolean(entity, EffectManager.PARTICLES_KEY);
     }
 
-    public void setParticlesVisibility(Player player, boolean particles) {
-        setEntryBoolean(player, EffectManager.PARTICLES_KEY, particles);
+    public void setParticlesVisibility(LivingEntity entity, boolean particles) {
+        setEntryBoolean(entity, EffectManager.PARTICLES_KEY, particles);
     }
 
-    public boolean isEnded(Player player) {
-        return getDuration(player) <= 0 && isFinite(player);
+    public boolean isEnded(LivingEntity entity) {
+        return getDuration(entity) <= 0 && isFinite(entity);
     }
 
-    public boolean isInfinite(Player player) {
-        return getDuration(player) == EffectManager.INFINITE_DURATION;
+    public boolean isInfinite(LivingEntity entity) {
+        return getDuration(entity) == EffectManager.INFINITE_DURATION;
     }
 
-    public boolean isFinite(Player player) {
-        return !isInfinite(player);
+    public boolean isFinite(LivingEntity entity) {
+        return !isInfinite(entity);
     }
 
-    protected abstract void onStart(Player player);
-    protected abstract void onTick(Player player);
-    protected abstract void onEnd(Player player);
+    protected abstract void onStart(LivingEntity entity);
+    protected abstract void onTick(LivingEntity entity);
+    protected abstract void onEnd(LivingEntity entity);
 
-    public void start(Player player) {
-        start(player, EffectManager.DEFAULT_DURATION);
+    public void start(LivingEntity entity) {
+        start(entity, EffectManager.DEFAULT_DURATION);
     }
 
-    public void start(Player player, int duration) {
-        start(player, duration, EffectManager.DEFAULT_AMPLIFIER);
+    public void start(LivingEntity entity, int duration) {
+        start(entity, duration, EffectManager.DEFAULT_AMPLIFIER);
     }
 
-    public void start(Player player, int duration, int amplifier) {
-        start(player, duration, amplifier, EffectManager.DEFAULT_PARTICLES);
+    public void start(LivingEntity entity, int duration, int amplifier) {
+        start(entity, duration, amplifier, EffectManager.DEFAULT_PARTICLES);
     }
 
-    public void start(Player player, int duration, int amplifier, boolean particles) {
-        setDuration(player, duration);
-        setAmplifier(player, amplifier);
-        setParticlesVisibility(player, particles);
+    public void start(LivingEntity entity, int duration, int amplifier, boolean particles) {
+        setDuration(entity, duration);
+        setAmplifier(entity, amplifier);
+        setParticlesVisibility(entity, particles);
 
-        onStart(player);
+        onStart(entity);
     }
 
-    public void tick(Player player) {
-        if (isEnded(player) || !player.isValid()) {
-            end(player);
+    public void tick(LivingEntity entity) {
+        if (isEnded(entity) || !entity.isValid()) {
+            end(entity);
             return;
         }
 
-        if (isFinite(player)) {
-            decreaseDuration(player);
+        if (isFinite(entity)) {
+            decreaseDuration(entity);
         }
 
-        onTick(player);
+        onTick(entity);
 
-        if (getParticles(player)) {
-            showParticles(player);
+        if (getParticles(entity)) {
+            showParticles(entity);
         }
     }
 
-    public void end(Player player) {
-        onEnd(player);
+    public void end(LivingEntity entity) {
+        onEnd(entity);
 
-        removeContainerData(player, getKey());
+        removeContainerData(entity, getKey());
     }
 
-    private void showParticles(Player player) {
+    private void showParticles(LivingEntity entity) {
         int bound = 4;
 
         if (RANDOM.nextInt(bound) != 0) return;
 
-        player.getWorld().spawnParticle(
+        entity.getWorld().spawnParticle(
                 Particle.ENTITY_EFFECT,
-                getParticleLocation(player),
+                getParticleLocation(entity),
                 1,
                 0,
                 0,
@@ -122,17 +122,17 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
         );
     }
 
-    private Location getParticleLocation(Player player) {
-        Location location = player.getLocation();
+    private Location getParticleLocation(LivingEntity entity) {
+        Location location = entity.getLocation();
 
-        double bbWidth = player.getBoundingBox().getWidthX();
-        double bbHeight = player.getBoundingBox().getHeight();
+        double bbWidth = entity.getBoundingBox().getWidthX();
+        double bbHeight = entity.getBoundingBox().getHeight();
 
         double x = location.getX() + getParticleSpread(bbWidth);
         double y = location.getY() + (RANDOM.nextDouble() * bbHeight);
         double z = location.getZ() + getParticleSpread(bbWidth);
 
-        return new Location(player.getWorld(), x, y, z);
+        return new Location(entity.getWorld(), x, y, z);
     }
 
     private static double getParticleSpread(double bbWidth) {
@@ -142,7 +142,7 @@ public abstract class BaseEffect implements Keyed, Translatable, PersistentHolde
         return bbWidth * progress;
     }
 
-    private void decreaseDuration(Player player) {
+    private void decreaseDuration(LivingEntity player) {
         setDuration(player, getDuration(player) - 1);
     }
 }

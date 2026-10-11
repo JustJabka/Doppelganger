@@ -4,7 +4,7 @@ import justjabka.doppelganger.Doppelganger;
 import justjabka.doppelganger.DoppelgangerRegistries;
 import justjabka.doppelganger.effect.generic.BaseEffect;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
@@ -35,8 +35,8 @@ public final class EffectManager {
     public static final int MAX_AMPLIFIER = 255;
 
     // Methods
-    public static Set<BaseEffect> getActiveEffects(Player player) {
-        PersistentDataContainer pdc = player.getPersistentDataContainer();
+    public static Set<BaseEffect> getActiveEffects(LivingEntity entity) {
+        PersistentDataContainer pdc = entity.getPersistentDataContainer();
         PersistentDataContainer container = pdc.getOrDefault(
                 EFFECTS_KEY,
                 PersistentDataType.TAG_CONTAINER,
@@ -55,11 +55,11 @@ public final class EffectManager {
         return activeEffects;
     }
 
-    public static void clearAllEffects(Player player) {
-        Set<BaseEffect> activeEffects = getActiveEffects(player);
+    public static void clearAllEffects(LivingEntity entity) {
+        Set<BaseEffect> activeEffects = getActiveEffects(entity);
 
         for (BaseEffect effect : activeEffects) {
-            effect.end(player);
+            effect.end(entity);
         }
     }
 }
